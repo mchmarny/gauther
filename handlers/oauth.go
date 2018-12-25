@@ -7,19 +7,28 @@ import (
 	"fmt"
 	"io/ioutil"
 	"context"
+	"strings"
 	"log"
 	"encoding/base64"
 	"crypto/rand"
 	"os"
 	"time"
+
+	"github.com/mchmarny/gauther/stores"
 )
 
 const googleOAuthURL = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
 
 var oauthConfig *oauth2.Config
 
-// ConfigureOAuthProvider initializes auth
-func ConfigureOAuthProvider(baseURL string) {
+// ConfigureOAuthHandler initializes auth
+func ConfigureOAuthHandler(ctx context.Context, baseURL string) error {
+
+	if baseURL == "" || !strings.HasPrefix(baseURL, "http") {
+		return fmt.Errorf("baseURL must start with HTTP or HTTPS")
+	}
+
+	log.Printf("Configuring auth callback to %s", baseURL)
 
 	oauthConfig = &oauth2.Config{
 		RedirectURL:  fmt.Sprintf("%s/auth/callback", baseURL),
@@ -32,6 +41,8 @@ func ConfigureOAuthProvider(baseURL string) {
 	if oauthConfig.ClientID == "" || oauthConfig.ClientSecret == "" {
 		log.Fatalf("Both OAUTH_CLIENT_ID and OAUTH_CLIENT_SECRET must be defined.")
 	}
+
+	return stores.InitStore(ctx)
 
 }
 
