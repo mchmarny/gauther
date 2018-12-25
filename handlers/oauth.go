@@ -16,38 +16,27 @@ import (
 
 const googleOAuthURL = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
 
-var googleOAuthConfig = &oauth2.Config{
-	RedirectURL:  "http://localhost:8080/auth/google/callback",
-	ClientID:     os.Getenv("OAUTH_CLIENT_ID"),
-	ClientSecret: os.Getenv("OAUTH_CLIENT_SECRET"),
-	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
-	Endpoint:     google.Endpoint,
-}
+var oauthConfig *oauth2.Config
 
+// ConfigureOAuthProvider initializes auth
+func ConfigureOAuthProvider(baseURL string) {
 
-// NewOAuthHandler is a helper method which returns fully configured mux
-func NewOAuthHandler() http.Handler {
+	oauthConfig = &oauth2.Config{
+		RedirectURL:  fmt.Sprintf("%s/auth/callback", baseURL),
+		ClientID:     os.Getenv("OAUTH_CLIENT_ID"),
+		ClientSecret: os.Getenv("OAUTH_CLIENT_SECRET"),
+		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
+		Endpoint:     google.Endpoint,
+	}
 
-	if googleOAuthConfig.ClientID == "" || googleOAuthConfig.ClientSecret == "" {
+	if oauthConfig.ClientID == "" || oauthConfig.ClientSecret == "" {
 		log.Fatalf("Both OAUTH_CLIENT_ID and OAUTH_CLIENT_SECRET must be defined.")
 	}
 
-	mux := http.NewServeMux()
-
-	// Root
-	mux.Handle("/",  http.FileServer(http.Dir("templates/")))
-
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-
-
-	// OauthGoogle
-	mux.HandleFunc("/auth/google/login", oauthGoogleLogin)
-	mux.HandleFunc("/auth/google/callback", oauthGoogleCallback)
-
-	return mux
 }
 
-func oauthGoogleLogin(w http.ResponseWriter, r *http.Request) {
+// OAuthLoginHandler handles oauth login
+func OAuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Create oauthState cookie
 	oauthState := generateStateOauthCookie(w)
@@ -57,11 +46,12 @@ func oauthGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	You must always provide a non-empty string and validate that it matches the the
 	state query parameter on your redirect callback.
 	*/
-	u := googleOAuthConfig.AuthCodeURL(oauthState)
+	u := oauthConfig.AuthCodeURL(oauthState)
 	http.Redirect(w, r, u, http.StatusTemporaryRedirect)
 }
 
-func oauthGoogleCallback(w http.ResponseWriter, r *http.Request) {
+// OAuthCallbackHandler handles oauth callback
+func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	// Read oauthState from Cookie
 	oauthState, _ := r.Cookie("oauthstate")
 
@@ -98,7 +88,7 @@ func generateStateOauthCookie(w http.ResponseWriter) string {
 func getUserDataFromGoogle(code string) ([]byte, error) {
 	// Use code to get token and get user info from Google.
 
-	token, err := googleOAuthConfig.Exchange(context.Background(), code)
+	token, err := oauthConfig.Exchange(context.Background(), code)
 	if err != nil {
 		return nil, fmt.Errorf("code exchange wrong: %s", err.Error())
 	}
