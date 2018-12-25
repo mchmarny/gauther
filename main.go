@@ -37,7 +37,7 @@ func main() {
 	// Google OAuth
 	err := handlers.ConfigureOAuthHandler(ctx, url)
 	if err != nil {
-		log.Fatal("Error when initializing OAuth handler")
+		log.Fatalf("Error when initializing OAuth handler: %s", err)
 	}
 
 	// Mux
@@ -47,7 +47,8 @@ func main() {
 	mux.Handle("/", http.FileServer(http.Dir("templates/")))
 
 	// Static
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	mux.Handle("/static/", http.StripPrefix("/static/",
+	  	http.FileServer(http.Dir("static"))))
 
 	// OAuth handlers
 	mux.HandleFunc("/auth/login", handlers.OAuthLoginHandler)

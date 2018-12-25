@@ -11,6 +11,7 @@ import (
 
 	"google.golang.org/api/iterator"
 
+
 )
 
 const (
@@ -22,6 +23,8 @@ var (
 	coll = defaultCollectionName
 )
 
+
+
 // InitStore returns configured store
 func InitStore(ctx context.Context) error {
 
@@ -29,7 +32,7 @@ func InitStore(ctx context.Context) error {
 	collName := os.Getenv("FIRESTORE_COLL_NAME")
 
 	if projectID == "" {
-		return fmt.Errorf("projectID required")
+		return fmt.Errorf("Undefined GCP_PROJECT_ID env var")
 	}
 
 	if collName != "" {

@@ -11,6 +11,7 @@ import (
 	"log"
 	"encoding/base64"
 	"crypto/rand"
+	"encoding/json"
 	"os"
 	"time"
 
@@ -79,9 +80,27 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Capture user data
-	// Redirect to authed page with token
-	fmt.Fprintf(w, "UserInfo: %s\n", data)
+	log.Printf("Raw data: %s", data)
+	dataMap := make(map[string]interface{})
+	json.Unmarshal(data, &dataMap)
+
+	log.Printf("Data map: %v", dataMap)
+
+	email := dataMap["email"]
+	log.Printf("Email: %s", email)
+
+	id := stores.MakeID(email.(string))
+	log.Printf("ID: %s", id)
+
+	err = stores.SaveData(r.Context(), id, dataMap)
+	if err != nil {
+		log.Printf("Error while saving data: %v", err)
+		http.Redirect(w, r, "/", http.StatusBadRequest)
+		return
+	}
+
+	// TODO: redirect to landing page
+	fmt.Fprintf(w, "%s", data)
 }
 
 func generateStateOauthCookie(w http.ResponseWriter) string {
