@@ -31,16 +31,15 @@ func main() {
 	// Mux
 	mux := http.NewServeMux()
 
-	// Templates
-	mux.Handle("/", http.FileServer(http.Dir("templates/")))
-
 	// Static
 	mux.Handle("/static/", http.StripPrefix("/static/",
 	  	http.FileServer(http.Dir("static"))))
 
-	// OAuth handlers
+	// Handlers
+	mux.HandleFunc("/", handlers.DefaultHandler)
 	mux.HandleFunc("/auth/login", handlers.OAuthLoginHandler)
 	mux.HandleFunc("/auth/callback", handlers.OAuthCallbackHandler)
+	mux.HandleFunc("/auth/logout", handlers.LogOutHandler)
 
 	// Server configured
 	server := &http.Server{

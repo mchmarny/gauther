@@ -21,7 +21,8 @@ import (
 
 const (
 	googleOAuthURL = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
-	oauthstateCookieName = "oauthstate"
+	stateCookieName = "authstate"
+	userIDCookieName = "uid"
 )
 
 var (
@@ -52,34 +53,37 @@ func ConfigureOAuthHandler(ctx context.Context, baseURL string) error {
 // OAuthLoginHandler handles oauth login
 func OAuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 
-	// Create oauthState cookie
-	oauthState := generateStateOauthCookie(w)
+	log.Println("OAuth login...")
 
-	/*
-	AuthCodeURL receive state that is a token to protect the user from CSRF attacks.
-	You must always provide a non-empty string and validate that it matches the the
-	state query parameter on your redirect callback.
-	*/
-	u := oauthConfig.AuthCodeURL(oauthState)
+	uidCookie, _ := r.Cookie(userIDCookieName)
+	if uidCookie != nil {
+		log.Printf("User authenticated: %s", uidCookie.Value)
+	}
+
+	u := oauthConfig.AuthCodeURL(generateStateOauthCookie(w))
 	http.Redirect(w, r, u, http.StatusTemporaryRedirect)
+
 }
 
 // OAuthCallbackHandler handles oauth callback
 func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
-	// Read oauthState from Cookie
-	oauthState, _ := r.Cookie(oauthstateCookieName)
+	log.Println("OAuth callback...")
 
+	oauthState, _ := r.Cookie(stateCookieName)
+
+	// checking state of the callback
 	if r.FormValue("state") != oauthState.Value {
-		log.Println("invalid oauth google state")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		log.Println("invalid oauth state from Google")
+		ErrorHandler(w, r)
 		return
 	}
 
+	// parsing callback data
 	data, err := getUserDataFromGoogle(r.FormValue("code"))
 	if err != nil {
-		log.Println(err.Error())
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		log.Printf("Error while parsing user data %v", err)
+		ErrorHandler(w, r)
 		return
 	}
 
@@ -87,32 +91,62 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	dataMap := make(map[string]interface{})
 	json.Unmarshal(data, &dataMap)
 
-	log.Printf("Data map: %v", dataMap)
-
 	email := dataMap["email"]
 	log.Printf("Email: %s", email)
 
 	id := utils.MakeID(email.(string))
 	log.Printf("ID: %s", id)
 
+	// save data
 	err = stores.SaveData(r.Context(), id, dataMap)
 	if err != nil {
 		log.Printf("Error while saving data: %v", err)
-		http.Redirect(w, r, "/", http.StatusBadRequest)
+		ErrorHandler(w, r)
 		return
 	}
 
+	// set cookie for 30 days
+	cookie := http.Cookie{
+		Name: userIDCookieName,
+		Path: "/",
+		Value: id,
+		Expires: time.Now().Add(30 * 24 * time.Hour),
+	}
+	http.SetCookie(w, &cookie)
+
 	// TODO: redirect to landing page
-	fmt.Fprintf(w, "%s", data)
+	// fmt.Fprintf(w, "%s", data)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+	//DefaultHandler(w, r)
 }
 
-func generateStateOauthCookie(w http.ResponseWriter) string {
-	var expiration = time.Now().Add(365 * 24 * time.Hour)
 
+
+// LogOutHandler resets cookie and redirects to home page
+func LogOutHandler(w http.ResponseWriter, r *http.Request) {
+
+	log.Println("Log out...")
+	cookie := http.Cookie{
+		Name: userIDCookieName,
+		Path: "/",
+		Value: "",
+		MaxAge: -1,
+	}
+	http.SetCookie(w, &cookie)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+
+func generateStateOauthCookie(w http.ResponseWriter) string {
+	exp := time.Now().Add(365 * 24 * time.Hour)
 	b := make([]byte, 16)
 	rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)
-	cookie := http.Cookie{Name: oauthstateCookieName, Value: state, Expires: expiration}
+	cookie := http.Cookie{
+		Name: stateCookieName,
+		Value: state,
+		Expires: exp,
+	}
 	http.SetCookie(w, &cookie)
 
 	return state

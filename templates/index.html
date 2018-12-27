@@ -5,13 +5,39 @@
         body {
             background: #fff;
         }
+
+        div {
+            margin: 5px;
+        }
     </style>
 </head>
 
 <body>
-    <a href="/auth/login">
-        <img src="static/images/sign-in.png" />
-    </a>
+
+    {{if .email}}
+
+    <h1>Welcome back</h1>
+
+    <div>
+        <div><b>{{.name}}</b></div>
+        <div>{{.email}}</div>
+        <div><img src="{{.picture}}" width="150" /></div>
+        <div><a href="/auth/logout">Logout</a></div>
+    </div>
+
+    {{else}}
+
+    <h1>Authenticate</h1>
+
+    <div>
+        <a href="/auth/login">
+            <img src="static/images/sign-in.png" />
+        </a>
+    </div>
+
+    {{end}}
+
+
 </body>
 
 </html>
