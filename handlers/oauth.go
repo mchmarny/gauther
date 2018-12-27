@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/mchmarny/gauther/stores"
-
 	"github.com/mchmarny/gauther/utils"
 )
 
@@ -31,13 +30,11 @@ var (
 
 // ConfigureOAuthHandler initializes auth handler
 func ConfigureOAuthHandler(ctx context.Context, baseURL string) error {
-
 	if baseURL == "" || !strings.HasPrefix(baseURL, "http") {
 		return fmt.Errorf("baseURL must start with HTTP or HTTPS")
 	}
 
 	log.Printf("Configuring auth callback to %s", baseURL)
-
 	oauthConfig = &oauth2.Config{
 		RedirectURL:  fmt.Sprintf("%s/auth/callback", baseURL),
 		ClientID:     utils.MustGetEnv("OAUTH_CLIENT_ID", ""),
@@ -45,30 +42,21 @@ func ConfigureOAuthHandler(ctx context.Context, baseURL string) error {
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 		Endpoint:     google.Endpoint,
 	}
-
 	return stores.InitStore(ctx)
-
 }
 
 // OAuthLoginHandler handles oauth login
 func OAuthLoginHandler(w http.ResponseWriter, r *http.Request) {
-
-	log.Println("OAuth login...")
-
 	uidCookie, _ := r.Cookie(userIDCookieName)
 	if uidCookie != nil {
 		log.Printf("User authenticated: %s", uidCookie.Value)
 	}
-
 	u := oauthConfig.AuthCodeURL(generateStateOauthCookie(w))
 	http.Redirect(w, r, u, http.StatusTemporaryRedirect)
-
 }
 
 // OAuthCallbackHandler handles oauth callback
 func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
-
-	log.Println("OAuth callback...")
 
 	oauthState, _ := r.Cookie(stateCookieName)
 
@@ -87,15 +75,13 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Raw data: %s", data)
 	dataMap := make(map[string]interface{})
 	json.Unmarshal(data, &dataMap)
 
 	email := dataMap["email"]
 	log.Printf("Email: %s", email)
-
 	id := utils.MakeID(email.(string))
-	log.Printf("ID: %s", id)
+
 
 	// save data
 	err = stores.SaveData(r.Context(), id, dataMap)
@@ -114,18 +100,15 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &cookie)
 
-	// TODO: redirect to landing page
-	// fmt.Fprintf(w, "%s", data)
+	// redirect on success
 	http.Redirect(w, r, "/", http.StatusSeeOther)
-	//DefaultHandler(w, r)
+
 }
 
 
 
 // LogOutHandler resets cookie and redirects to home page
 func LogOutHandler(w http.ResponseWriter, r *http.Request) {
-
-	log.Println("Log out...")
 	cookie := http.Cookie{
 		Name: userIDCookieName,
 		Path: "/",
@@ -154,21 +137,23 @@ func generateStateOauthCookie(w http.ResponseWriter) string {
 
 func getUserDataFromGoogle(code string) ([]byte, error) {
 
-	// Use code to get token and get user info from Google.
+	// exchange code
 	token, err := oauthConfig.Exchange(context.Background(), code)
 	if err != nil {
-		return nil, fmt.Errorf("code exchange wrong: %s", err.Error())
+		return nil, fmt.Errorf("Got wrong exchange code: %v", err)
 	}
 
+	// user info
 	response, err := http.Get(googleOAuthURL + token.AccessToken)
 	if err != nil {
-		return nil, fmt.Errorf("failed getting user info: %s", err.Error())
+		return nil, fmt.Errorf("Error getting user info: %v", err)
 	}
 	defer response.Body.Close()
 
+	// parse body
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed read response: %s", err.Error())
+		return nil, fmt.Errorf("Error reading response: %v", err)
 	}
 
 	return contents, nil

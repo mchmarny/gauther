@@ -2,7 +2,6 @@ module github.com/mchmarny/gauther
 
 require (
 	cloud.google.com/go v0.34.0
-	github.com/douglasmakey/oauth2-example v0.0.0-20180710210847-3d309f35fc40
 	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	go.opencensus.io v0.18.0 // indirect
 	golang.org/x/net v0.0.0-20181220203305-927f97764cc3 // indirect
