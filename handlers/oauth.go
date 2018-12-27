@@ -12,17 +12,23 @@ import (
 	"encoding/base64"
 	"crypto/rand"
 	"encoding/json"
-	"os"
 	"time"
 
 	"github.com/mchmarny/gauther/stores"
+
+	"github.com/mchmarny/gauther/utils"
 )
 
-const googleOAuthURL = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
+const (
+	googleOAuthURL = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
+	oauthstateCookieName = "oauthstate"
+)
 
-var oauthConfig *oauth2.Config
+var (
+	oauthConfig *oauth2.Config
+)
 
-// ConfigureOAuthHandler initializes auth
+// ConfigureOAuthHandler initializes auth handler
 func ConfigureOAuthHandler(ctx context.Context, baseURL string) error {
 
 	if baseURL == "" || !strings.HasPrefix(baseURL, "http") {
@@ -33,14 +39,10 @@ func ConfigureOAuthHandler(ctx context.Context, baseURL string) error {
 
 	oauthConfig = &oauth2.Config{
 		RedirectURL:  fmt.Sprintf("%s/auth/callback", baseURL),
-		ClientID:     os.Getenv("OAUTH_CLIENT_ID"),
-		ClientSecret: os.Getenv("OAUTH_CLIENT_SECRET"),
+		ClientID:     utils.MustGetEnv("OAUTH_CLIENT_ID", ""),
+		ClientSecret: utils.MustGetEnv("OAUTH_CLIENT_SECRET", ""),
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 		Endpoint:     google.Endpoint,
-	}
-
-	if oauthConfig.ClientID == "" || oauthConfig.ClientSecret == "" {
-		log.Fatalf("Both OAUTH_CLIENT_ID and OAUTH_CLIENT_SECRET must be defined.")
 	}
 
 	return stores.InitStore(ctx)
@@ -64,8 +66,9 @@ func OAuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 // OAuthCallbackHandler handles oauth callback
 func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
+
 	// Read oauthState from Cookie
-	oauthState, _ := r.Cookie("oauthstate")
+	oauthState, _ := r.Cookie(oauthstateCookieName)
 
 	if r.FormValue("state") != oauthState.Value {
 		log.Println("invalid oauth google state")
@@ -89,7 +92,7 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	email := dataMap["email"]
 	log.Printf("Email: %s", email)
 
-	id := stores.MakeID(email.(string))
+	id := utils.MakeID(email.(string))
 	log.Printf("ID: %s", id)
 
 	err = stores.SaveData(r.Context(), id, dataMap)
@@ -109,7 +112,7 @@ func generateStateOauthCookie(w http.ResponseWriter) string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)
-	cookie := http.Cookie{Name: "oauthstate", Value: state, Expires: expiration}
+	cookie := http.Cookie{Name: oauthstateCookieName, Value: state, Expires: expiration}
 	http.SetCookie(w, &cookie)
 
 	return state

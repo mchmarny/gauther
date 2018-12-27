@@ -4,12 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"context"
 
 	"cloud.google.com/go/firestore"
 
 	"google.golang.org/api/iterator"
+
+	"github.com/mchmarny/gauther/utils"
 
 
 )
@@ -19,8 +20,8 @@ const (
 )
 
 var (
-	db                *firestore.Client
-	coll = defaultCollectionName
+	db   *firestore.Client
+	coll string
 )
 
 
@@ -28,17 +29,8 @@ var (
 // InitStore returns configured store
 func InitStore(ctx context.Context) error {
 
-	projectID := os.Getenv("GCP_PROJECT_ID")
-	collName := os.Getenv("FIRESTORE_COLL_NAME")
-
-	if projectID == "" {
-		return fmt.Errorf("Undefined GCP_PROJECT_ID env var")
-	}
-
-	if collName != "" {
-		log.Printf("Overriding default collection name to: %s", collName)
-		coll = collName
-	}
+	projectID := utils.MustGetEnv("GCP_PROJECT_ID", "")
+	coll = utils.MustGetEnv("FIRESTORE_COLL_NAME", defaultCollectionName)
 
 	log.Printf("Initiating firestore client for %s collection in %s project",
 		coll, projectID)

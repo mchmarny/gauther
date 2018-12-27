@@ -4,35 +4,23 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"context"
 
 	"github.com/mchmarny/gauther/handlers"
+
+	"github.com/mchmarny/gauther/utils"
 )
 
-const (
-	portEnvToken = "PORT"
-	externalURLToken = "EXTERNAL_URL"
-)
+
 
 func main() {
 
 	log.Print("Configuring server...")
-
-	// context for the entire server instance
 	ctx := context.Background()
 
-	// port
-	port := os.Getenv(portEnvToken)
-	if port == "" {
-		port = "8080"
-	}
-
-	// port
-	url := os.Getenv(externalURLToken)
-	if url == "" {
-		url = fmt.Sprintf("http://localhost:%s", port)
-	}
+	// config
+	port := utils.MustGetEnv("PORT", "8080")
+	url := utils.MustGetEnv("EXTERNAL_URL", fmt.Sprintf("http://localhost:%s", port))
 
 	// Google OAuth
 	err := handlers.ConfigureOAuthHandler(ctx, url)

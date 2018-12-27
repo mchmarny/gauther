@@ -1,4 +1,4 @@
-package stores
+package utils
 
 import (
 	"crypto/md5"
