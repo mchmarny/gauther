@@ -4,7 +4,7 @@ Basic Google OAuth2 implementation with [Firestore](https://cloud.google.com/fir
 
 ## Demo
 
-[https://gauther.default.knative.tech/]
+https://gauther.default.knative.tech/
 
 ## Setup
 
