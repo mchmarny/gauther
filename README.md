@@ -45,6 +45,10 @@ If you haven't used Firestore on GCP before, you will have to enable its APIs. Y
 * Select `Cloud Firestore in Native mode` from service screen
 * Choose your DB location and click `Create Database`
 
+The persisted data in Firestore should look something like this
+
+![Firestore DB](static/img/firestore-ui.png)
+
 ### App Deployment
 
 To deploy the `gauther` are are going to:
