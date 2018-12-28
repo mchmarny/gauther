@@ -1,41 +1,87 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-    <style>
-        body {
-            background: #fff;
-        }
-
-        div {
-            margin: 5px;
-        }
-    </style>
+    <title>Civic - CV Resume</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="GAuther - Knative Demo">
+    <meta name="keywords" content="google, oauth, golang, knative">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="static/img/favicon.ico" rel="shortcut icon" />
+    <link href="https://fonts.googleapis.com/css?family=Chivo:300,400,900" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/app.css" />
 </head>
 
 <body>
 
-    {{if .email}}
+    <div id="wrapper">
 
-    <h1>Welcome back</h1>
+        <!-- Header -->
+        <div id="page-header">
+            <div id="page-header-image">
+                <img src="static/img/knative-logo.png" />
+            </div>
+            <div id="page-header-title">
+                GAuth on Knative
+            </div>
+        </div>
 
-    <div>
-        <div><b>{{.name}}</b></div>
-        <div>{{.email}}</div>
-        <div><img src="{{.picture}}" width="150" /></div>
-        <div><a href="/auth/logout">Logout</a></div>
+
+        <div id="middle-section">
+            {{if .email}}
+
+            <!-- Middle (Authed) -->
+            <h3>{{.name}}</h3>
+            <div class="pic">
+                <img src="{{.picture}}" width="200" />
+            </div>
+
+            <div class="email">
+                Signed in as: {{.email}}
+            </div>
+            <div class="logout">
+                <a href="/auth/logout" id="logout-button">Sign Out</a>
+            </div>
+
+            {{else}}
+
+            <!-- Middle (Anon) -->
+            <div class="login">
+                <a href="/auth/login">
+                    <img src="static/img/sign-in.png" />
+                </a>
+            </div>
+
+
+            {{end}}
+        </div>
+
+        <!-- Footer -->
+        <div id="page-footer">
+            <p>
+                <a href="https://developers.google.com/identity/protocols/OAuth2">
+                    Google OAuth2
+                </a>
+                implementation on
+                <a href="https://github.com/knative/">
+                    Knative
+                </a>
+                with
+                <a href="https://firebase.google.com/docs/firestore/">
+                    Cloud Firestore
+                </a>
+                persistence
+            </p>
+            <p>
+                <b>Source:</b>
+                <a href="https://github.com/mchmarny/gauther">
+                    github.com/mchmarny/gauther
+                </a>
+            </p>
+        </div>
+
+
     </div>
-
-    {{else}}
-
-    <h1>Authenticate</h1>
-
-    <div>
-        <a href="/auth/login">
-            <img src="static/images/sign-in.png" />
-        </a>
-    </div>
-
-    {{end}}
 
 
 </body>
