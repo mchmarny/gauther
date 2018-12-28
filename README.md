@@ -2,6 +2,10 @@
 
 Basic Google OAuth2 implementation with [Firestore](https://cloud.google.com/firestore/) persistence at global scale
 
+## Demo
+
+[https://gauther.default.knative.tech/]
+
 ## Setup
 
 ### Knative URL
