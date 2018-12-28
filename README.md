@@ -23,6 +23,8 @@ In your Google Cloud Platform (GCP) project console navigate to the Credentials 
 * Click create and copy both `client id` and `client secret`
 * CLICK `OK` to save
 
+> You will also have to verify the domain ownership. More on that [here](https://support.google.com/cloud/answer/6158849?hl=en#authorized-domains)
+
 ### Google Cloud Firestore
 
 If you haven't used yet Firestore on GCP, you will have to enable it. You can find instructions on how to do it [here](https://firebase.google.com/docs/firestore/quickstart)
