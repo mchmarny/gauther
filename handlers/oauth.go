@@ -82,6 +82,11 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Email: %s", email)
 	id := utils.MakeID(email.(string))
 
+	//server resize image
+	pic := dataMap["picture"]
+	if pic != nil {
+		dataMap["picture"] = utils.ServerSizeResizePlusPic(pic.(string), 200)
+	}
 
 	// save data
 	err = stores.SaveData(r.Context(), id, dataMap)
