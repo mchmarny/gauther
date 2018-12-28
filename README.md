@@ -8,6 +8,11 @@ https://gauther.default.knative.tech/
 
 ## Setup
 
+> NOTE: Work in progress
+
+For now, take a look at the [Makefile](https://github.com/mchmarny/gauther/blob/master/Makefile) for help with the major configuration commands. 
+
+
 ### Knative URL
 
 To avoid the kind of chicken and an egg situation we are going to first define the `URL` that your application will have when you publish it on Knative. Knative uses convention to build serving URL by combining the deployment name (e.g. `gauther`), namespace name (e.g. `default`), and the pre-configured domain name (e.g. `knative.tech`). The resulting URL, assuming you already configured SSL, should look something like this:
@@ -34,3 +39,4 @@ In your Google Cloud Platform (GCP) project console navigate to the Credentials 
 If you haven't used yet Firestore on GCP, you will have to enable it. You can find instructions on how to do it [here](https://firebase.google.com/docs/firestore/quickstart)
 
 ### App Configuration
+
