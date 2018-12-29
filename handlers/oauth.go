@@ -1,13 +1,10 @@
 package handlers
 
 import (
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"net/http"
 	"fmt"
 	"io/ioutil"
 	"context"
-	"strings"
 	"log"
 	"encoding/base64"
 	"crypto/rand"
@@ -17,6 +14,7 @@ import (
 
 	"github.com/mchmarny/gauther/stores"
 	"github.com/mchmarny/gauther/utils"
+
 )
 
 const (
@@ -24,27 +22,6 @@ const (
 	stateCookieName = "authstate"
 	userIDCookieName = "uid"
 )
-
-var (
-	oauthConfig *oauth2.Config
-)
-
-// ConfigureOAuthHandler initializes auth handler
-func ConfigureOAuthHandler(ctx context.Context, baseURL string) error {
-	if baseURL == "" || !strings.HasPrefix(baseURL, "http") {
-		return fmt.Errorf("baseURL must start with HTTP or HTTPS")
-	}
-
-	log.Printf("Configuring auth callback to %s", baseURL)
-	oauthConfig = &oauth2.Config{
-		RedirectURL:  fmt.Sprintf("%s/auth/callback", baseURL),
-		ClientID:     utils.MustGetEnv("OAUTH_CLIENT_ID", ""),
-		ClientSecret: utils.MustGetEnv("OAUTH_CLIENT_SECRET", ""),
-		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
-		Endpoint:     google.Endpoint,
-	}
-	return stores.InitStore(ctx)
-}
 
 // OAuthLoginHandler handles oauth login
 func OAuthLoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -123,15 +100,6 @@ func LogOutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &cookie)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
-
-func getCurrentUserID(r *http.Request) string {
-	c, _ := r.Cookie(userIDCookieName)
-	if c != nil {
-		return c.Value
-	}
-	return ""
 }
 
 func generateStateOauthCookie(w http.ResponseWriter) string {

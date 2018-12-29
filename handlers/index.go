@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"html/template"
 	"log"
 
 	"github.com/mchmarny/gauther/stores"
@@ -13,16 +12,12 @@ import (
 // DefaultHandler handles index page
 func DefaultHandler(w http.ResponseWriter, r *http.Request) {
 
-	log.Println("Index handler...")
-
-	tmpl := template.Must(template.ParseFiles("templates/index.html"))
-
 	var data map[string]interface{}
 
-	uidCookie, _ := r.Cookie(userIDCookieName)
-	if uidCookie != nil && uidCookie.Value != "" {
-		log.Printf("User authenticated: %s, getting data...", uidCookie.Value)
-		userData, err := stores.GetData(r.Context(), uidCookie.Value)
+	uid := getCurrentUserID(r)
+	if uid != "" {
+		log.Printf("User authenticated: %s, getting data...", uid)
+		userData, err := stores.GetData(r.Context(), uid)
 		if err != nil {
 			log.Printf("Error while getting user data: %v", err)
 			ErrorHandler(w, r, err, http.StatusInternalServerError)
@@ -31,7 +26,7 @@ func DefaultHandler(w http.ResponseWriter, r *http.Request) {
 		data = userData
 	}
 
-	tmpl.Execute(w, data)
+	templates.ExecuteTemplate(w, "home", data)
 
 
 

@@ -4,29 +4,19 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"context"
 
 	"github.com/mchmarny/gauther/handlers"
-
 	"github.com/mchmarny/gauther/utils"
+	"github.com/mchmarny/gauther/stores"
 )
-
 
 
 func main() {
 
-	log.Print("Configuring server...")
-	ctx := context.Background()
+	// init configs
+	stores.InitDataStore()
+	handlers.InitHandlers()
 
-	// config
-	port := utils.MustGetEnv("PORT", "8080")
-	url := utils.MustGetEnv("EXTERNAL_URL", fmt.Sprintf("http://localhost:%s", port))
-
-	// Google OAuth
-	err := handlers.ConfigureOAuthHandler(ctx, url)
-	if err != nil {
-		log.Fatalf("Error when initializing OAuth handler: %s", err)
-	}
 
 	// Mux
 	mux := http.NewServeMux()
@@ -45,6 +35,7 @@ func main() {
 	})
 
 	// Server configured
+	port := utils.MustGetEnv("PORT", "8080")
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%s", port),
 		Handler: mux,

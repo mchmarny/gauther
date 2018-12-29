@@ -26,8 +26,8 @@ var (
 
 
 
-// InitStore returns configured store
-func InitStore(ctx context.Context) error {
+// InitDataStore initializes client
+func InitDataStore() {
 
 	projectID := utils.MustGetEnv("GCP_PROJECT_ID", "")
 	coll = utils.MustGetEnv("FIRESTORE_COLL_NAME", defaultCollectionName)
@@ -35,14 +35,11 @@ func InitStore(ctx context.Context) error {
 	log.Printf("Initiating firestore client for %s collection in %s project",
 		coll, projectID)
 
-	dbClient, err := firestore.NewClient(ctx, projectID)
+	dbClient, err := firestore.NewClient(context.Background(), projectID)
 	if err != nil {
-		return fmt.Errorf("Error while creating Firestore client: %v", err)
+		log.Fatalf("Error while creating Firestore client: %v", err)
 	}
 	db = dbClient
-
-	return nil
-
 }
 
 // CloseStore closes the DB connection
