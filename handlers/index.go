@@ -25,7 +25,7 @@ func DefaultHandler(w http.ResponseWriter, r *http.Request) {
 		userData, err := stores.GetData(r.Context(), uidCookie.Value)
 		if err != nil {
 			log.Printf("Error while getting user data: %v", err)
-			ErrorHandler(w, r)
+			ErrorHandler(w, r, err, http.StatusInternalServerError)
 			return
 		}
 		data = userData

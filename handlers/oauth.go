@@ -13,6 +13,7 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"time"
+	"errors"
 
 	"github.com/mchmarny/gauther/stores"
 	"github.com/mchmarny/gauther/utils"
@@ -62,8 +63,8 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	// checking state of the callback
 	if r.FormValue("state") != oauthState.Value {
-		log.Println("invalid oauth state from Google")
-		ErrorHandler(w, r)
+		err := errors.New("invalid oauth state from Google")
+		ErrorHandler(w, r, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -71,7 +72,7 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	data, err := getUserDataFromGoogle(r.FormValue("code"))
 	if err != nil {
 		log.Printf("Error while parsing user data %v", err)
-		ErrorHandler(w, r)
+		ErrorHandler(w, r, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -92,7 +93,7 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	err = stores.SaveData(r.Context(), id, dataMap)
 	if err != nil {
 		log.Printf("Error while saving data: %v", err)
-		ErrorHandler(w, r)
+		ErrorHandler(w, r, err, http.StatusInternalServerError)
 		return
 	}
 
