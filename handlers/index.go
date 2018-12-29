@@ -26,7 +26,9 @@ func DefaultHandler(w http.ResponseWriter, r *http.Request) {
 		data = userData
 	}
 
-	templates.ExecuteTemplate(w, "home", data)
+	if err := templates.ExecuteTemplate(w, "home", data); err != nil {
+		log.Printf("Error in home template: %s", err)
+	}
 
 
 

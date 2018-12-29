@@ -13,10 +13,12 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request, err error, code int) {
 	errMsg := fmt.Sprintf("%+v", err)
 
 	w.WriteHeader(code)
-	templates.ExecuteTemplate(w, "error", map[string]interface{}{
+	if err := templates.ExecuteTemplate(w, "error", map[string]interface{}{
 		"error":       errMsg,
 		"status_code": code,
 		"status":      http.StatusText(code),
-	})
+	}); err != nil {
+		log.Printf("Error in error template: %s", err)
+	}
 
 }

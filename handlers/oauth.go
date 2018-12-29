@@ -27,7 +27,7 @@ const (
 func OAuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 	uid := getCurrentUserID(r)
 	if uid != "" {
-		log.Printf("User authenticated: %s", uid)
+		log.Printf("User ID from previous visit: %s", uid)
 	}
 	u := oauthConfig.AuthCodeURL(generateStateOauthCookie(w))
 	http.Redirect(w, r, u, http.StatusTemporaryRedirect)
