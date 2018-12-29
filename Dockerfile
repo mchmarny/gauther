@@ -13,17 +13,13 @@ RUN CGO_ENABLED=0 go build -o /gauther
 
 
 # run image
-FROM scratch
+FROM alpine as release
+RUN apk add --no-cache ca-certificates
 
-# certs from build to avoid "certificate signed by unknown authority" error
-# you can also build from golang:alpine ...
-# and run "apk --no-cache add ca-certificates"
-COPY --from=build /src/certs/ca-certificates.crt /etc/ssl/certs/
-
-# copy app executable
+# app executable
 COPY --from=build /gauther /app/
 
-# copy static dependancies
+# static dependancies
 COPY --from=build /src/templates /app/templates/
 COPY --from=build /src/static /app/static/
 
