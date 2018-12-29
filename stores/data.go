@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sort"
 	"context"
 
 	"cloud.google.com/go/firestore"
@@ -50,23 +51,27 @@ func CloseStore(){
 }
 
 
-// GetAllData retreaves all data in the collection
-func GetAllData(ctx context.Context, data chan<- map[string]interface{},
-									 err chan<- error,
-									 done chan<- bool) {
+// GetAllEmails retreaves Email for all data in the collection
+func GetAllEmails(ctx context.Context) (data []string, err error) {
 
-	iter := db.Collection(coll).Documents(ctx)
+	list := []string{}
+
+	iter := db.Collection(coll).OrderBy("email", firestore.Asc).Documents(ctx)
 	for {
 		d, e := iter.Next()
 		if e == iterator.Done {
-			done <- true
-			break
+			sort.Strings(list)
+			return list, nil
 		}
 		if e != nil {
-			err <- e
+			return nil, e
 		}
 
-		data <- d.Data()
+		m := d.Data()
+
+		log.Printf("[%v] %v", m["email"], m["id"])
+
+		list = append(list, m["email"].(string))
 	}
 
 }

@@ -6,13 +6,14 @@ import (
 )
 
 // MustGetEnv gets sets value or sets it to default when not set
-func MustGetEnv(key, defaultValue string) string {
-	val := os.Getenv(key)
-	if val == "" {
-		val = defaultValue
+func MustGetEnv(key, fallbackValue string) string {
+	if val, ok := os.LookupEnv(key); ok {
+		return val
 	}
-	if val == "" {
-		log.Fatalf("Required env var (%q) not set", key)
+
+	if fallbackValue == "" {
+		log.Fatalf("Required env var (%s) not set", key)
 	}
-	return val
+
+	return fallbackValue
 }

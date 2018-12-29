@@ -1,6 +1,8 @@
 package stores
 
 import (
+	"context"
+	"log"
 	"testing"
 )
 
@@ -10,15 +12,24 @@ func TestJobData(t *testing.T) {
 		t.Skip("Skipping TestJobData")
 	}
 
+	InitDataStore()
+
+	ctx := context.Background()
+
+	list, err := GetAllEmails(ctx)
+	if err != nil {
+		t.Errorf("Error on get all emails: %v", err)
+	}
+
+	for i, v := range list {
+		log.Printf("[%d] %s", i, v)
+	}
+
 	// configInitializer("test-data")
 
 	// termReq := newRequest("test")
 
 	// err := saveJob(termReq)
-
-	// if err != nil {
-	// 	t.Errorf("Error on job save: %v", err)
-	// }
 
 	// req, err := getJob(termReq.ID)
 
