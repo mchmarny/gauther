@@ -48,9 +48,9 @@ func ConfigureOAuthHandler(ctx context.Context, baseURL string) error {
 
 // OAuthLoginHandler handles oauth login
 func OAuthLoginHandler(w http.ResponseWriter, r *http.Request) {
-	uidCookie, _ := r.Cookie(userIDCookieName)
-	if uidCookie != nil {
-		log.Printf("User authenticated: %s", uidCookie.Value)
+	uid := getCurrentUserID(r)
+	if uid != "" {
+		log.Printf("User authenticated: %s", uid)
 	}
 	u := oauthConfig.AuthCodeURL(generateStateOauthCookie(w))
 	http.Redirect(w, r, u, http.StatusTemporaryRedirect)
@@ -125,6 +125,14 @@ func LogOutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
+
+func getCurrentUserID(r *http.Request) string {
+	c, _ := r.Cookie(userIDCookieName)
+	if c != nil {
+		return c.Value
+	}
+	return ""
+}
 
 func generateStateOauthCookie(w http.ResponseWriter) string {
 	exp := time.Now().Add(365 * 24 * time.Hour)
