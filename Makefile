@@ -11,10 +11,6 @@ cover:
 	go test -coverprofile=coverage.out
 	go tool cover -html=coverage.out
 
-cert:
-	echo "Downloading latest ca certs from Mozilla..."
-	curl -o ./certs/ca-certificates.crt https://curl.haxx.se/ca/cacert.pem
-
 deps:
 	go mod tidy
 
@@ -38,6 +34,12 @@ secrets:
 
 service:
 	kubectl apply -f deployments/service.yaml
+	kubectl get pods
 
-serviceless:
+service-clean:
+	echo "BEFORE"
+	kubectl get pods
 	kubectl delete -f deployments/service.yaml
+	kubectl apply -f deployments/service.yaml
+	echo "AFTER"
+	kubectl get pods
