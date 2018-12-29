@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"time"
 	"fmt"
 	"html/template"
 	"log"
@@ -16,6 +17,8 @@ var (
 	// Templates for handlers
 	templates   *template.Template
 	oauthConfig *oauth2.Config
+	longTimeAgo  = time.Duration(3650 * 24 * time.Hour)
+	cookieDuration = time.Duration(30 * 24 * time.Hour)
 )
 
 // InitHandlers initializes OAuth package

@@ -46,7 +46,7 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// parsing callback data
-	data, err := getUserDataFromGoogle(r.FormValue("code"))
+	data, err := getOAuthedUserData(r.FormValue("code"))
 	if err != nil {
 		log.Printf("Error while parsing user data %v", err)
 		ErrorHandler(w, r, err, http.StatusInternalServerError)
@@ -79,7 +79,7 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		Name: userIDCookieName,
 		Path: "/",
 		Value: id,
-		Expires: time.Now().Add(30 * 24 * time.Hour),
+		Expires: time.Now().Add(cookieDuration),
 	}
 	http.SetCookie(w, &cookie)
 
@@ -92,32 +92,38 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 // LogOutHandler resets cookie and redirects to home page
 func LogOutHandler(w http.ResponseWriter, r *http.Request) {
+
+	uid := getCurrentUserID(r)
+	log.Printf("User logging out: %s", uid)
+
 	cookie := http.Cookie{
 		Name: userIDCookieName,
 		Path: "/",
 		Value: "",
 		MaxAge: -1,
+		Expires: time.Now().Add(-longTimeAgo),
 	}
+
 	http.SetCookie(w, &cookie)
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/", http.StatusSeeOther) // home
 }
 
 func generateStateOauthCookie(w http.ResponseWriter) string {
-	exp := time.Now().Add(365 * 24 * time.Hour)
+
 	b := make([]byte, 16)
 	rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)
 	cookie := http.Cookie{
 		Name: stateCookieName,
 		Value: state,
-		Expires: exp,
+		Expires: time.Now().Add(cookieDuration),
 	}
 	http.SetCookie(w, &cookie)
 
 	return state
 }
 
-func getUserDataFromGoogle(code string) ([]byte, error) {
+func getOAuthedUserData(code string) ([]byte, error) {
 
 	// exchange code
 	token, err := oauthConfig.Exchange(context.Background(), code)
