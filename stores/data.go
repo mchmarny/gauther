@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"sort"
 	"context"
 
 	"cloud.google.com/go/firestore"
@@ -21,8 +20,7 @@ const (
 )
 
 var (
-	db   *firestore.Client
-	coll string
+	coll   *firestore.CollectionRef
 )
 
 
@@ -31,47 +29,35 @@ var (
 func InitDataStore() {
 
 	projectID := utils.MustGetEnv("GCP_PROJECT_ID", "")
-	coll = utils.MustGetEnv("FIRESTORE_COLL_NAME", defaultCollectionName)
+	collName := utils.MustGetEnv("FIRESTORE_COLL_NAME", defaultCollectionName)
 
 	log.Printf("Initiating firestore client for %s collection in %s project",
-		coll, projectID)
+		collName, projectID)
 
 	dbClient, err := firestore.NewClient(context.Background(), projectID)
 	if err != nil {
 		log.Fatalf("Error while creating Firestore client: %v", err)
 	}
-	db = dbClient
-}
-
-// CloseStore closes the DB connection
-func CloseStore(){
-	if db != nil {
-		db.Close()
-	}
+	coll = dbClient.Collection(collName)
 }
 
 
-// GetAllEmails retreaves Email for all data in the collection
-func GetAllEmails(ctx context.Context) (data []string, err error) {
+// GetAllI retreaves all data for all data in the collection
+func GetAllI(ctx context.Context) (data []map[string]interface{}, err error) {
 
-	list := []string{}
+	list := make([]map[string]interface{}, 0)
 
-	iter := db.Collection(coll).OrderBy("email", firestore.Asc).Documents(ctx)
+	iter := coll.OrderBy("email", firestore.Asc).Documents(ctx)
 	for {
 		d, e := iter.Next()
 		if e == iterator.Done {
-			sort.Strings(list)
 			return list, nil
 		}
 		if e != nil {
 			return nil, e
 		}
 
-		m := d.Data()
-
-		log.Printf("[%v] %v", m["email"], m["id"])
-
-		list = append(list, m["email"].(string))
+		list = append(list, d.Data())
 	}
 
 }
@@ -84,7 +70,7 @@ func SaveData(ctx context.Context, id string, data map[string]interface{}) error
 		return errors.New("Nil id")
 	}
 
-	_, err := db.Collection(coll).Doc(id).Set(ctx, data, firestore.MergeAll)
+	_, err := coll.Doc(id).Set(ctx, data, firestore.MergeAll)
 	if err != nil {
 		return fmt.Errorf("Error on job save: %v", err)
 	}
@@ -100,7 +86,7 @@ func GetData(ctx context.Context, id string) (data map[string]interface{}, err e
 		return nil, errors.New("Nil job ID parameter")
 	}
 
-	d, err := db.Collection(coll).Doc(id).Get(ctx)
+	d, err := coll.Doc(id).Get(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +108,7 @@ func DeleteData(ctx context.Context, id string) error {
 		return errors.New("Nil job ID parameter")
 	}
 
-	_, err := db.Collection(coll).Doc(id).Delete(ctx)
+	_, err := coll.Doc(id).Delete(ctx)
 	if err != nil {
 		return fmt.Errorf("Error deleting data: %v", err)
 	}

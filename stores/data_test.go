@@ -16,13 +16,13 @@ func TestJobData(t *testing.T) {
 
 	ctx := context.Background()
 
-	list, err := GetAllEmails(ctx)
+	list, err := GetAllI(ctx)
 	if err != nil {
 		t.Errorf("Error on get all emails: %v", err)
 	}
 
 	for i, v := range list {
-		log.Printf("[%d] %s", i, v)
+		log.Printf("[%d] %s - %s", i, v["id"], v["email"])
 	}
 
 	// configInitializer("test-data")
