@@ -28,13 +28,14 @@ docker:
 	docker build -t gauther .
 
 secrets:
-	kubectl create secret generic gauther \
-		--from-literal=OAUTH_CLIENT_ID=$(GAUTHER_OAUTH_CLIENT_ID) \
-		--from-literal=OAUTH_CLIENT_SECRET=$(GAUTHER_OAUTH_CLIENT_SECRET)
+	# kubectl delete secret gauther -n demo
+	kubectl create secret generic gauther -n demo \
+		--from-literal=OAUTH_CLIENT_ID=$(DEMO_OAUTH_CLIENT_ID) \
+		--from-literal=OAUTH_CLIENT_SECRET=$(DEMO_OAUTH_CLIENT_SECRET)
 
 service:
 	kubectl apply -f deployments/service.yaml
-	kubectl get pods
+	kubectl get pods -n demo
 
 service-clean:
 	echo "BEFORE"

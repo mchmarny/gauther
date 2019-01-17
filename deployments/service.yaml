@@ -1,8 +1,8 @@
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
 metadata:
-  name: gauther
-  namespace: default
+  name: auth
+  namespace: demo
 spec:
   runLatest:
     configuration:
@@ -16,7 +16,7 @@ spec:
             imagePullPolicy: Always
             env:
             - name: RELEASE
-              value: "v0.4.1"
+              value: "v0.4.6"
             - name: OAUTH_CLIENT_ID
               valueFrom:
                 secretKeyRef:
@@ -30,4 +30,4 @@ spec:
             - name: GCP_PROJECT_ID
               value: "s9-demo"
             - name: EXTERNAL_URL
-              value: "https://gauther.default.knative.tech"
+              value: "https://auth.demo.knative.tech"

@@ -34,6 +34,7 @@ func InitDataStore() {
 	log.Printf("Initiating firestore client for %s collection in %s project",
 		collName, projectID)
 
+	// Assumes GOOGLE_APPLICATION_CREDENTIALS is set
 	dbClient, err := firestore.NewClient(context.Background(), projectID)
 	if err != nil {
 		log.Fatalf("Error while creating Firestore client: %v", err)

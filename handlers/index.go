@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/mchmarny/gauther/stores"
+	"github.com/mchmarny/gauther/utils"
 
 )
 
@@ -13,6 +14,7 @@ import (
 func DefaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	var data map[string]interface{}
+	data["version"] = utils.MustGetEnv("RELEASE", "NOT SET")
 
 	uid := getCurrentUserID(r)
 	if uid != "" {
