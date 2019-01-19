@@ -8,15 +8,24 @@ spec:
     configuration:
       revisionTemplate:
         metadata:
+          labels:
+            demo: auth
           annotations:
             autoscaling.knative.dev/minScale: "1"
         spec:
           container:
             image: gcr.io/s9-demo/gauther:latest
             imagePullPolicy: Always
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "0.5"
+              limits:
+                memory: "1Gi"
+                cpu: "1"
             env:
             - name: RELEASE
-              value: "v0.4.6"
+              value: "v0.4.7"
             - name: OAUTH_CLIENT_ID
               valueFrom:
                 secretKeyRef:

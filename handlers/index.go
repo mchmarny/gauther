@@ -13,8 +13,7 @@ import (
 // DefaultHandler handles index page
 func DefaultHandler(w http.ResponseWriter, r *http.Request) {
 
-	var data map[string]interface{}
-	data["version"] = utils.MustGetEnv("RELEASE", "NOT SET")
+	data := make(map[string]interface{})
 
 	uid := getCurrentUserID(r)
 	if uid != "" {
@@ -27,6 +26,8 @@ func DefaultHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		data = userData
 	}
+
+	data["version"] = utils.MustGetEnv("RELEASE", "NOT SET")
 
 	if err := templates.ExecuteTemplate(w, "home", data); err != nil {
 		log.Printf("Error in home template: %s", err)
