@@ -82,8 +82,8 @@ Before we can deploy that service to Knative, we just need to create Kubernetes 
 
 ```shell
 kubectl create secret generic gauther \
-    --from-literal=OAUTH_CLIENT_ID=$(DEMO__OAUTH_CLIENT_ID) \
-    --from-literal=OAUTH_CLIENT_SECRET=$(DEMO__OAUTH_CLIENT_SECRET)
+    --from-literal=OAUTH_CLIENT_ID=$(DEMO_OAUTH_CLIENT_ID) \
+    --from-literal=OAUTH_CLIENT_SECRET=$(DEMO_OAUTH_CLIENT_SECRET)
 ```
 
 Now in the `deploy/server.yaml` file update the `GCP_PROJECT_ID`
@@ -93,7 +93,7 @@ Now in the `deploy/server.yaml` file update the `GCP_PROJECT_ID`
       value: "enter your project ID here"
 ```
 
-And the external URL of your which we defined at the begining of this readme in [###knative-url] section.
+And the external URL of your which we defined at the beginning of this readme in [###knative-url] section.
 
 ```yaml
     - name: EXTERNAL_URL
@@ -102,7 +102,7 @@ And the external URL of your which we defined at the begining of this readme in 
 
 #### Deploy Service
 
-Once done updating our service manifest (`deploy/server.yaml`) you are ready to deploy it.
+Once done updating service manifest (`deploy/server.yaml`) you are now ready to deploy it.
 
 ```shell
 kubectl apply -f deployments/service.yaml
