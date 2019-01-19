@@ -16,16 +16,9 @@ spec:
           container:
             image: gcr.io/s9-demo/gauther:latest
             imagePullPolicy: Always
-            resources:
-              requests:
-                memory: "128Mi"
-                cpu: "0.5"
-              limits:
-                memory: "1Gi"
-                cpu: "1"
             env:
             - name: RELEASE
-              value: "v0.4.9"
+              value: "v0.4.10"
             - name: OAUTH_CLIENT_ID
               valueFrom:
                 secretKeyRef:
