@@ -43,8 +43,8 @@ func InitDataStore() {
 }
 
 
-// GetAllI retreaves all data for all data in the collection
-func GetAllI(ctx context.Context) (data []map[string]interface{}, err error) {
+// GetAll retreaves all data for all data in the collection
+func GetAll(ctx context.Context) (data []map[string]interface{}, err error) {
 
 	list := make([]map[string]interface{}, 0)
 

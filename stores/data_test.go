@@ -16,7 +16,7 @@ func TestJobData(t *testing.T) {
 
 	ctx := context.Background()
 
-	list, err := GetAllI(ctx)
+	list, err := GetAll(ctx)
 	if err != nil {
 		t.Errorf("Error on get all emails: %v", err)
 	}
