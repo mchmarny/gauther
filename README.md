@@ -4,7 +4,7 @@ Basic Google OAuth2 implementation with [Firestore](https://cloud.google.com/fir
 
 ## Demo
 
-https://gauther.default.knative.tech/
+https://auth.demo.knative.tech/
 
 ## Setup
 
@@ -15,10 +15,10 @@ Setup assumes you already have `gcloud` installed. If not, see [Installing Googl
 
 ### Knative URL
 
-To avoid the kind of chicken and an egg situation we are going to first define the `URL` that your application will have when you publish it on Knative. Knative uses convention to build serving URL by combining the deployment name (e.g. `gauther`), namespace name (e.g. `default`), and the pre-configured domain name (e.g. `knative.tech`). The resulting URL, assuming you already configured SSL, should look something like this:
+To avoid the kind of chicken and an egg situation we are going to first define the `URL` that your application will have when you publish it on Knative. Knative uses convention to build serving URL by combining the deployment name (e.g. `auth`), namespace name (e.g. `demo`), and the pre-configured domain name (e.g. `knative.tech`). The resulting URL, assuming you already configured SSL, should look something like this:
 
 ```shell
-https://gauther.default.knative.tech
+https://auth.demo.knative.tech
 ```
 
 ### Google OAuth Credentials
@@ -28,11 +28,11 @@ In your Google Cloud Platform (GCP) project console navigate to the Credentials 
 * Click “Create credentials” and select “OAuth client ID”
 * Select "Web application"
 * Add authorized redirect URL at the bottom using the fully qualified domain we defined above and appending the `callback` path:
- * `https://gauther.default.knative.tech/auth/callback`
+ * `https://auth.demo.knative.tech/auth/callback`
 * Click create and copy both `client id` and `client secret`
 * CLICK `OK` to save
 
-For ease of use, export the copied client `id` as `GAUTHER_OAUTH_CLIENT_ID` and `secret` as `GAUTHER_OAUTH_CLIENT_SECRET` in your environment variables (e.g. ~/.bashrc or ~/.profile)
+For ease of use, export the copied client `id` as `DEMO_OAUTH_CLIENT_ID` and `secret` as `DEMO_OAUTH_CLIENT_SECRET` in your environment variables (e.g. ~/.bashrc or ~/.profile)
 
 > You will also have to verify the domain ownership. More on that [here](https://support.google.com/cloud/answer/6158849?hl=en#authorized-domains)
 
@@ -82,8 +82,8 @@ Before we can deploy that service to Knative, we just need to create Kubernetes 
 
 ```shell
 kubectl create secret generic gauther \
-    --from-literal=OAUTH_CLIENT_ID=$GAUTHER_OAUTH_CLIENT_ID \
-    --from-literal=OAUTH_CLIENT_SECRET=$GAUTHER_OAUTH_CLIENT_SECRET
+    --from-literal=OAUTH_CLIENT_ID=$(DEMO_OAUTH_CLIENT_ID) \
+    --from-literal=OAUTH_CLIENT_SECRET=$(DEMO_OAUTH_CLIENT_SECRET)
 ```
 
 Now in the `deploy/server.yaml` file update the `GCP_PROJECT_ID`
@@ -93,7 +93,7 @@ Now in the `deploy/server.yaml` file update the `GCP_PROJECT_ID`
       value: "enter your project ID here"
 ```
 
-And the external URL of your which we defined at the begining of this readme in [###knative-url] section.
+And the external URL of your which we defined at the beginning of this readme in [###knative-url] section.
 
 ```yaml
     - name: EXTERNAL_URL
@@ -118,7 +118,7 @@ To check if the service was deployed successfully you can check the status using
 
 ```shell
 NAME                                          READY     STATUS    RESTARTS   AGE
-gauther-00002-deployment-5645f48b4d-mb24j      3/3       Running   0          4h
+auth-00002-deployment-5645f48b4d-mb24j        3/3       Running   0          4h
 ```
 
 You should be able to test the app now in browser using the `URL` you defined above.
