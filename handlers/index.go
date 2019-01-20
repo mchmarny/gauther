@@ -17,14 +17,13 @@ func DefaultHandler(w http.ResponseWriter, r *http.Request) {
 
 	uid := getCurrentUserID(r)
 	if uid != "" {
-		log.Printf("User authenticated: %s, getting data...", uid)
+		log.Printf("User has ID: %s, getting data...", uid)
 		userData, err := stores.GetData(r.Context(), uid)
 		if err != nil {
 			log.Printf("Error while getting user data: %v", err)
-			ErrorHandler(w, r, err, http.StatusInternalServerError)
-			return
+		}else{
+			data = userData
 		}
-		data = userData
 	}
 
 	data["version"] = utils.MustGetEnv("RELEASE", "NOT SET")
