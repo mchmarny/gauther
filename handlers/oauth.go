@@ -12,6 +12,9 @@ import (
 	"time"
 	"errors"
 
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+
 	"github.com/mchmarny/gauther/stores"
 	"github.com/mchmarny/gauther/utils"
 
@@ -23,13 +26,51 @@ const (
 	userIDCookieName = "uid"
 )
 
+var (
+	longTimeAgo    = time.Duration(3650 * 24 * time.Hour)
+	cookieDuration = time.Duration(30 * 24 * time.Hour)
+	oauthConfig *oauth2.Config
+)
+
+
+func getOAuthConfig(r *http.Request) *oauth2.Config {
+
+	if oauthConfig != nil {
+		return oauthConfig
+	}
+
+	// HTTPS or HTTP
+	proto := r.Header.Get("X-FORWARDED-PROTO")
+	if proto == "" {
+		proto = "http"
+	}
+
+	baseURL := fmt.Sprintf("%s://%s", proto, r.Host)
+	log.Printf("External URL: %s", baseURL)
+
+	// OAuth
+	oauthConfig = &oauth2.Config{
+		RedirectURL:  fmt.Sprintf("%s/auth/callback", baseURL),
+		ClientID:     utils.MustGetEnv("OAUTH_CLIENT_ID", ""),
+		ClientSecret: utils.MustGetEnv("OAUTH_CLIENT_SECRET", ""),
+		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
+		Endpoint:     google.Endpoint,
+	}
+
+	return oauthConfig
+
+}
+
+
+
 // OAuthLoginHandler handles oauth login
 func OAuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 	uid := getCurrentUserID(r)
 	if uid != "" {
 		log.Printf("User ID from previous visit: %s", uid)
 	}
-	u := oauthConfig.AuthCodeURL(generateStateOauthCookie(w))
+
+	u := getOAuthConfig(r).AuthCodeURL(generateStateOauthCookie(w))
 	http.Redirect(w, r, u, http.StatusTemporaryRedirect)
 }
 
@@ -46,7 +87,7 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// parsing callback data
-	data, err := getOAuthedUserData(r.FormValue("code"))
+	data, err := getOAuthedUserData(r)
 	if err != nil {
 		log.Printf("Error while parsing user data %v", err)
 		ErrorHandler(w, r, err, http.StatusInternalServerError)
@@ -127,10 +168,10 @@ func generateStateOauthCookie(w http.ResponseWriter) string {
 	return state
 }
 
-func getOAuthedUserData(code string) ([]byte, error) {
+func getOAuthedUserData(r *http.Request) ([]byte, error) {
 
 	// exchange code
-	token, err := oauthConfig.Exchange(context.Background(), code)
+	token, err := getOAuthConfig(r).Exchange(context.Background(), r.FormValue("code"))
 	if err != nil {
 		return nil, fmt.Errorf("Got wrong exchange code: %v", err)
 	}

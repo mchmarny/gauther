@@ -28,6 +28,7 @@ spec:
                   name: gauther
                   key: OAUTH_CLIENT_SECRET
             - name: GCP_PROJECT_ID
-              value: "s9-demo"
-            - name: EXTERNAL_URL
-              value: "https://auth.demo.knative.tech"
+              valueFrom:
+                configMapKeyRef:
+                  name: global-config
+                  key: project
