@@ -66,6 +66,8 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		dataMap["picture"] = utils.ServerSizeResizePlusPic(pic.(string), 200)
 	}
 
+	dataMap["last_auth"] = time.Now()
+
 	// save data
 	err = stores.SaveData(r.Context(), id, dataMap)
 	if err != nil {
@@ -73,6 +75,8 @@ func OAuthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler(w, r, err, http.StatusInternalServerError)
 		return
 	}
+
+	// TODO: insert into dataMap map last_auth time
 
 	// set cookie for 30 days
 	cookie := http.Cookie{

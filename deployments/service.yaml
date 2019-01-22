@@ -10,15 +10,13 @@ spec:
         metadata:
           labels:
             demo: auth
-          annotations:
-            autoscaling.knative.dev/minScale: "1"
         spec:
           container:
             image: gcr.io/s9-demo/gauther:latest
             imagePullPolicy: Always
             env:
             - name: RELEASE
-              value: "v0.4.12"
+              value: "v0.4.14"
             - name: OAUTH_CLIENT_ID
               valueFrom:
                 secretKeyRef:

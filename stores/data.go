@@ -11,6 +11,8 @@ import (
 
 	"github.com/mchmarny/gauther/utils"
 
+	// "cloud.google.com/go/compute/metadata"
+
 
 )
 
@@ -27,6 +29,7 @@ var (
 // InitDataStore initializes client
 func InitDataStore() {
 
+	// TODO: Replace with metadata derived value
 	projectID := utils.MustGetEnv("GCP_PROJECT_ID", "")
 	collName := utils.MustGetEnv("FIRESTORE_COLL_NAME", defaultCollectionName)
 
@@ -34,6 +37,7 @@ func InitDataStore() {
 		collName, projectID)
 
 	// Assumes GOOGLE_APPLICATION_CREDENTIALS is set
+	// TODO: Project should be derived by client here
 	dbClient, err := firestore.NewClient(context.Background(), projectID)
 	if err != nil {
 		log.Fatalf("Error while creating Firestore client: %v", err)
